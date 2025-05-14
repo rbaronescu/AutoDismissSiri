@@ -1,3 +1,5 @@
+/* Disabling the preferences settings for now and use the same duration for lockscreen
+
 #define prefPath [NSString stringWithFormat:@"%@/Library/Preferences/%@", NSHomeDirectory(),@"se.nosskirneh.autodismisssiri.plist"]
 
 static BOOL enabled;
@@ -25,6 +27,8 @@ void updateSettings(CFNotificationCenterRef center,
 - (BOOL)isUILocked;
 @end
 
+*/
+
 @interface ACSpringBoardPluginController : NSObject
 - (void)_requestDismissal;
 @end
@@ -35,16 +39,21 @@ void updateSettings(CFNotificationCenterRef center,
 - (void)siriViewController:(id)arg1 siriIdleAndQuietStatusDidChange:(BOOL)idle {
     %orig;
 
+/* enabled by default
     if (!enabled)
         return;
+*/
 
     static NSTimer *timer;
     if (idle) {
+        /* no lockscreen duration, use the same duration always
         SBLockScreenManager *lockscreenManager = [%c(SBLockScreenManager) sharedInstance];
         float d = lockscreenManager.isUILocked ? lockscreenDuration : duration;
         if (d == 0)
             return;
+        */
 
+        float d = 3; /* 3 seconds as duration */
         timer = [NSTimer scheduledTimerWithTimeInterval:d
                                                  target:self
                                                selector:@selector(dismiss:)
@@ -77,8 +86,10 @@ void updateSettings(CFNotificationCenterRef center,
 
 
 %ctor {
+    /* no preferences
     reloadPrefs();
     CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, &updateSettings, CFSTR("se.nosskirneh.autodismisssiri/preferencesChanged"), NULL, 0);
+    */
 
     %init;
 }

@@ -1,4 +1,5 @@
-TARGET = iphone:clang:9.2
+TARGET = iphone:clang:8.4
+THEOS_DEVICE_IP = # TODO
 
 include $(THEOS)/makefiles/common.mk
 
@@ -11,5 +12,5 @@ include $(THEOS_MAKE_PATH)/tweak.mk
 after-install::
 	install.exec "killall -9 SpringBoard"
 
-SUBPROJECTS += preferences
+# SUBPROJECTS += preferences
 include $(THEOS_MAKE_PATH)/aggregate.mk
