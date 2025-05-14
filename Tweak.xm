@@ -31,6 +31,7 @@ void updateSettings(CFNotificationCenterRef center,
 
 @interface ACSpringBoardPluginController : NSObject
 - (void)_requestDismissal;
+- (void)callHomeAssistantWebhook;
 @end
 
 %group Assistant
@@ -69,6 +70,43 @@ void updateSettings(CFNotificationCenterRef center,
 - (void)dismiss:(NSTimer *)timer {
     [timer invalidate];
     [self _requestDismissal];
+
+    // Call Home Assistant webhook
+    [self callHomeAssistantWebhook];
+}
+
+%new
+- (void)callHomeAssistantWebhook {
+    NSString *webhookUrl = @"http://your-webhook"; // TODO: change this
+
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:webhookUrl]];
+    [request setHTTPMethod:@"POST"];
+    [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+
+    NSDictionary *payload = @{
+        @"event": @"siri_dismissed",
+        @"device": [[UIDevice currentDevice] name]
+    };
+
+    NSError *error = nil;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:payload options:0 error:&error];
+
+    if (!error) {
+        [request setHTTPBody:jsonData];
+
+        // Use NSURLConnection for iOS 8.4 compatibility (NSURLSession is better for newer iOS)
+        [NSURLConnection sendAsynchronousRequest:request
+                                           queue:[NSOperationQueue mainQueue]
+                               completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+                                   if (connectionError) {
+                                       NSLog(@"AutoDismissSiri: Error calling Home Assistant webhook: %@", connectionError);
+                                   } else {
+                                       NSLog(@"AutoDismissSiri: Successfully called Home Assistant webhook");
+                                   }
+                               }];
+    } else {
+        NSLog(@"AutoDismissSiri: Error creating JSON payload: %@", error);
+    }
 }
 
 %end
